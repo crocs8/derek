@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   content: [
@@ -9,11 +10,50 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        background: "var(--bg-base)",
+        foreground: "var(--text-primary)",
+        bg: {
+          base: "var(--bg-base)",
+          panel: "var(--bg-panel)",
+          input: "var(--bg-input)",
+          hover: "var(--bg-hover)",
+        },
+        accent: {
+          DEFAULT: "var(--accent)",
+          hover: "var(--accent-hover)",
+        },
+        text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+        },
+        border: "var(--border)",
+        gold: {
+          DEFAULT: "var(--gold)",
+          text: "var(--gold-text)",
+        },
+        success: "var(--success)",
+        danger: "var(--danger)",
       },
+      borderRadius: {
+        card: "var(--radius-card)",
+        btn: "var(--radius-btn)",
+        badge: "var(--radius-badge)",
+      },
+      fontFamily: {
+        body: ["var(--font-body)"],
+        mono: ["var(--font-mono)"],
+      },
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        }
+      },
+      animation: {
+        marquee: 'marquee 30s linear infinite',
+      }
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 };
 export default config;

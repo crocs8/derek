@@ -1,0 +1,209 @@
+"use client"
+
+import * as React from "react"
+import { Search, X, Copy, Send, Check } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { PromptCard } from "@/components/shared/PromptCard"
+import { Badge } from "@/components/ui/badge"
+
+export const dynamic = 'force-dynamic'
+
+export default function PromptBankPage() {
+    const [search, setSearch] = React.useState("")
+    const [category, setCategory] = React.useState("All")
+    
+    const [prompts, setPrompts] = React.useState<any[]>([])
+    const [categories, setCategories] = React.useState<any[]>([])
+    const [loading, setLoading] = React.useState(true)
+
+    const [selectedPrompt, setSelectedPrompt] = React.useState<any>(null)
+    const [copied, setCopied] = React.useState(false)
+
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [promptsRes, catsRes] = await Promise.all([
+                    fetch("/api/prompts"),
+                    fetch("/api/categories")
+                ])
+                const promptsData = await promptsRes.json()
+                const catsData = await catsRes.json()
+                
+                if (Array.isArray(promptsData)) setPrompts(promptsData)
+                if (Array.isArray(catsData)) setCategories(catsData)
+            } catch (err) {
+                console.error("Failed to fetch prompt bank data", err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
+    }, [])
+
+    const filteredPrompts = prompts.filter(p => {
+        const query = search.toLowerCase()
+        const matchesSearch = p.title?.toLowerCase().includes(query) ||
+            p.description?.toLowerCase().includes(query) ||
+            p.tags?.some((t: string) => t.toLowerCase().includes(query));
+        const matchesCat = category === "All" || p.category === category;
+        return matchesSearch && matchesCat;
+    })
+
+    const handleCopy = () => {
+        if (!selectedPrompt) return;
+        navigator.clipboard.writeText(selectedPrompt.promptText || selectedPrompt.body);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    const sendToChat = (ai: "derek" | "claude") => {
+        if (!selectedPrompt) return;
+        const text = encodeURIComponent(selectedPrompt.promptText || selectedPrompt.body);
+        window.location.href = `/dashboard?prefill${ai === 'derek' ? 'Derek' : 'Claude'}=${text}`;
+    }
+
+    return (
+        <div className="flex flex-col h-full bg-bg-base overflow-y-auto p-6 lg:p-10 relative">
+            <div className="max-w-6xl w-full mx-auto">
+
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
+                                <div className="w-1.5 h-8 bg-accent rounded-full" />
+                                Prompt Bank
+                            </h1>
+                            <span className="bg-bg-hover text-text-secondary text-xs px-2.5 py-1 rounded-full border border-border mt-1">
+                                {filteredPrompts.length} prompts
+                            </span>
+                        </div>
+                        <p className="text-text-secondary">Discover, use, and modify high-quality prompts.</p>
+                    </div>
+
+                    <div className="relative w-full md:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" size={18} />
+                        <Input
+                            className="pl-10 text-text-primary bg-bg-input"
+                            placeholder="Search prompts, tags, categories..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex overflow-x-auto gap-2 pb-6 mb-6 border-b border-border hide-scrollbar">
+                    <button
+                        onClick={() => setCategory('All')}
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${category === 'All' ? 'bg-accent text-white' : 'bg-bg-hover text-text-secondary hover:bg-bg-panel hover:text-text-primary'}`}
+                    >
+                        All
+                    </button>
+                    {categories.map((cat) => (
+                        <button
+                            key={cat._id}
+                            onClick={() => setCategory(cat.name)}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap flex items-center gap-2 transition-colors ${category === cat.name ? 'bg-accent text-white' : 'bg-bg-hover text-text-secondary hover:bg-bg-panel hover:text-text-primary'}`}
+                        >
+                            <span>{cat.emoji}</span> {cat.name}
+                        </button>
+                    ))}
+                </div>
+
+                {loading ? (
+                    <div className="text-center py-20 text-text-secondary">Loading prompts...</div>
+                ) : filteredPrompts.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+                        {filteredPrompts.map((prompt) => (
+                            <PromptCard
+                                key={prompt._id}
+                                {...prompt}
+                                className="w-full"
+                                onClick={() => {
+                                    if (prompt.isMega) {
+                                        window.location.href = `/prompts/${prompt._id}`
+                                    } else {
+                                        setSelectedPrompt(prompt)
+                                    }
+                                }}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20 text-text-secondary">
+                        No prompts found matching your criteria.
+                    </div>
+                )}
+            </div>
+
+            {/* PROMPT DETAIL MODAL */}
+            {selectedPrompt && !selectedPrompt.isMega && (
+                <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-bg-panel border border-border w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        
+                        <div className="p-6 border-b border-border flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-4">
+                                <span className="text-4xl">{selectedPrompt.emoji}</span>
+                                <div>
+                                    <h2 className="text-xl font-bold text-text-primary mb-2 line-clamp-1">{selectedPrompt.title}</h2>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge variant="secondary" className="bg-bg-hover">{selectedPrompt.category}</Badge>
+                                        {selectedPrompt.tags?.map((t: string) => (
+                                            <span key={t} className="text-[0.65rem] border border-border px-2 py-0.5 rounded-full text-text-secondary">#{t}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <Button variant="ghost" size="icon" className="shrink-0 text-text-secondary" onClick={() => setSelectedPrompt(null)}>
+                                <X size={20} />
+                            </Button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 hide-scrollbar">
+                            <div>
+                                <h3 className="text-sm font-semibold text-text-primary mb-3">Prompt Body</h3>
+                                <div className="bg-bg-base border border-border rounded-xl p-4 text-sm text-text-primary whitespace-pre-wrap font-mono leading-relaxed max-h-[300px] overflow-y-auto hide-scrollbar">
+                                    {selectedPrompt.promptText || selectedPrompt.body}
+                                </div>
+                            </div>
+
+                            {selectedPrompt.sampleOutput && (
+                                <div>
+                                    <h3 className="text-sm font-semibold text-text-secondary mb-3">Sample Output Expected</h3>
+                                    <div className="bg-bg-hover rounded-xl p-4 text-sm text-text-secondary italic">
+                                        {selectedPrompt.sampleOutput}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-6 border-t border-border bg-bg-base/50 flex flex-col sm:flex-row gap-3">
+                            <Button 
+                                variant="outline" 
+                                className="flex-1 border-border text-text-primary hover:bg-bg-hover"
+                                onClick={handleCopy}
+                            >
+                                {copied ? <Check size={16} className="mr-2 text-green-500" /> : <Copy size={16} className="mr-2" />}
+                                {copied ? "Copied!" : "Copy Prompt"}
+                            </Button>
+                            <Button 
+                                className="flex-1 bg-accent text-white hover:bg-accent-hover"
+                                onClick={() => sendToChat('derek')}
+                            >
+                                <Send size={16} className="mr-2" />
+                                Send to Derek
+                            </Button>
+                            <Button 
+                                className="flex-1 bg-white text-black hover:bg-neutral-200"
+                                onClick={() => sendToChat('claude')}
+                            >
+                                <Send size={16} className="mr-2" />
+                                Send to Claude
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
