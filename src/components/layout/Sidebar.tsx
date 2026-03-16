@@ -66,6 +66,9 @@ export function Sidebar({ onClose }: SidebarProps) {
                         router.push('/dashboard')
                         onClose?.()
                     }}
+                    className="w-full justify-start gap-2 bg-accent text-white hover:bg-accent-hover"
+                >
+                    <Plus size={16} /> New Chat
                 </Button>
             </div>
 
