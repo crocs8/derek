@@ -6,9 +6,13 @@ import { useSession, signOut } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, LayoutGrid, Settings, HelpCircle, LogOut } from "lucide-react"
+import { Plus, LayoutGrid, Settings, HelpCircle, LogOut, X } from "lucide-react"
 
-export function Sidebar() {
+interface SidebarProps {
+    onClose?: () => void
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
     const { data: session } = useSession()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -41,15 +45,27 @@ export function Sidebar() {
     return (
         <aside className="w-[280px] shrink-0 border-r border-border bg-bg-base flex flex-col h-full sticky top-0">
             <div className="p-4 border-b border-border">
-                <Link href="/" className="flex items-center gap-1 font-bold text-xl mb-6 px-2">
-                    <span className="text-text-primary">EaseMyPrompt</span>
-                    <span className="text-accent">.ai</span>
-                </Link>
+                <div className="flex items-center justify-between mb-6">
+                    <Link href="/" className="flex items-center gap-1 font-bold text-xl px-2">
+                        <span className="text-text-primary">EaseMyPrompt</span>
+                        <span className="text-accent">.ai</span>
+                    </Link>
+                    {onClose && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onClose}
+                            className="md:hidden"
+                        >
+                            <X size={20} />
+                        </Button>
+                    )}
+                </div>
                 <Button 
-                    onClick={() => router.push('/dashboard')}
-                    className="w-full justify-start gap-2 bg-accent text-white hover:bg-accent-hover"
-                >
-                    <Plus size={16} /> New Chat
+                    onClick={() => {
+                        router.push('/dashboard')
+                        onClose?.()
+                    }}
                 </Button>
             </div>
 
@@ -61,7 +77,10 @@ export function Sidebar() {
                             {todayChats.map(chat => (
                                 <button 
                                     key={chat._id}
-                                    onClick={() => router.push(`/dashboard?id=${chat._id}`)}
+                                    onClick={() => {
+                                        router.push(`/dashboard?id=${chat._id}`)
+                                        onClose?.()
+                                    }}
                                     className={`w-full text-left px-3 py-2 text-sm truncate transition-colors rounded-btn ${currentChatId === chat._id ? 'bg-bg-hover text-text-primary' : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}`}
                                 >
                                     {chat.title}
@@ -78,7 +97,10 @@ export function Sidebar() {
                             {olderChats.map(chat => (
                                 <button 
                                     key={chat._id}
-                                    onClick={() => router.push(`/dashboard?id=${chat._id}`)}
+                                    onClick={() => {
+                                        router.push(`/dashboard?id=${chat._id}`)
+                                        onClose?.()
+                                    }}
                                     className={`w-full text-left px-3 py-2 text-sm truncate transition-colors rounded-btn ${currentChatId === chat._id ? 'bg-bg-hover text-text-primary' : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}`}
                                 >
                                     {chat.title}
@@ -89,7 +111,7 @@ export function Sidebar() {
                 )}
 
                 <div className="pt-2 border-t border-border mt-4">
-                    <Link href="/prompt-bank">
+                    <Link href="/prompt-bank" onClick={() => onClose?.()}>
                         <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover rounded-btn transition-colors">
                             <LayoutGrid size={16} />
                             Prompt Bank
