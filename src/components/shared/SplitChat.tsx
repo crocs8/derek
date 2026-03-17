@@ -279,12 +279,12 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
     }
 
     return (
-        <div className="flex flex-row w-full h-full border border-border rounded-xl overflow-hidden bg-bg-base">
+        <div className="flex flex-col md:flex-row w-full h-[600px] md:h-full border border-border rounded-xl overflow-hidden bg-bg-base">
 
             <FreeTierModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
 
             {/* LEFT PANEL - DEREK */}
-            <div className="flex-1 flex flex-col border-r border-border bg-bg-base relative min-w-0">
+            <div className="flex-1 flex flex-col border-b md:border-b-0 md:border-r border-border bg-bg-base relative min-w-0">
                 <div className="px-5 py-4 border-b border-border bg-bg-base flex items-center justify-between">
                     <div>
                         <h3 className="text-lg font-semibold text-text-primary">Derek</h3>
