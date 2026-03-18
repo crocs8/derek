@@ -263,70 +263,7 @@ export default function LandingPage() {
                 </a>
               </div>
             </div>
-          // ContactForm component
-          function ContactForm() {
-            const [name, setName] = React.useState("");
-            const [email, setEmail] = React.useState("");
-            const [message, setMessage] = React.useState("");
-            const [loading, setLoading] = React.useState(false);
-            const [success, setSuccess] = React.useState("");
-            const [error, setError] = React.useState("");
 
-            const handleSubmit = async (e: React.FormEvent) => {
-              e.preventDefault();
-              setLoading(true);
-              setSuccess("");
-              setError("");
-              try {
-                const res = await fetch("/api/contact", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ name, email, message })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                  setSuccess("Thank you for reaching out! We'll get back to you soon.");
-                  setName("");
-                  setEmail("");
-                  setMessage("");
-                } else {
-                  setError(data.error || "Something went wrong.");
-                }
-              } catch (err) {
-                setError("Failed to send message.");
-              } finally {
-                setLoading(false);
-              }
-            };
-
-            return (
-              <form className="space-y-5 flex flex-col pt-2" onSubmit={handleSubmit}>
-                <div className="grid md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-text-primary">Full Name</label>
-                    <Input placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-text-primary">Email</label>
-                    <Input type="email" placeholder="john@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
-                  </div>
-                </div>
-                <div className="space-y-2 pb-2">
-                  <label className="text-sm font-medium text-text-primary">Message</label>
-                  <textarea
-                    className="w-full min-h-[120px] rounded-btn border border-border bg-bg-input px-3 py-2 text-sm text-text-primary placeholder:text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-[150ms_ease] resize-y"
-                    placeholder="How can we help?"
-                    value={message}
-                    onChange={e => setMessage(e.target.value)}
-                    required
-                  />
-                </div>
-                {success && <div className="text-green-600 text-sm text-center">{success}</div>}
-                {error && <div className="text-red-500 text-sm text-center">{error}</div>}
-                <Button type="submit" className="w-full h-12 text-md" disabled={loading}>{loading ? "Sending..." : "Send Message"}</Button>
-              </form>
-            );
-          }
           </div>
         </section>
       </main>
