@@ -19,7 +19,7 @@ export default function DashboardLayout({
             </Suspense>
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+            <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden pt-14 md:pt-0">
                 {children}
             </main>
 
