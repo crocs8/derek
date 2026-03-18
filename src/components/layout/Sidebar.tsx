@@ -158,7 +158,7 @@ export function Sidebar() {
             {/* ── SIDEBAR: always visible on md+, slide-in drawer on mobile ── */}
             <aside
                 className={`
-                    fixed md:static inset-y-0 left-0 z-50
+                    fixed md:static inset-y-0 left-0 z-[60]
                     w-[280px] shrink-0 border-r border-border bg-bg-base flex flex-col h-full
                     transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}

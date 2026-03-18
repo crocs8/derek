@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
-const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
 
 const DEREK_SYSTEM_PROMPT = `You are Derek, a professional prompt engineer and AI communication strategist working for EaseMyPrompt.ai.
 
@@ -22,39 +20,70 @@ Always be concise. Get to the structured output quickly.
 You are NOT a general-purpose AI. If asked anything unrelated to prompt engineering, politely redirect:
 "I'm Derek, your prompt engineer! Ask me to structure any idea you have into a powerful AI prompt."`;
 
+type FilePayload =
+    | { type: "text"; text: string }
+    | { type: "image"; mediaType: string; base64: string }
+    | { type: "document"; mediaType: string; base64: string; name: string }
+
+function buildAnthropicContent(message: string, file?: FilePayload): Anthropic.MessageParam["content"] {
+    if (!file) return message;
+
+    if (file.type === "text") {
+        return `${file.text}\n\n---\nUser instruction: ${message}`;
+    }
+
+    if (file.type === "image") {
+        return [
+            {
+                type: "image" as const,
+                source: {
+                    type: "base64" as const,
+                    media_type: file.mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+                    data: file.base64,
+                },
+            },
+            { type: "text" as const, text: message },
+        ];
+    }
+
+    // document (pdf, docx, mp4 etc.) — send as base64 document block if supported, else fallback to text note
+    return [
+        {
+            type: "document" as const,
+            source: {
+                type: "base64" as const,
+                media_type: file.mediaType as "application/pdf",
+                data: file.base64,
+            },
+        } as unknown as Anthropic.TextBlockParam,
+        { type: "text" as const, text: message },
+    ];
+}
+
 export async function POST(req: Request) {
     try {
         if (!process.env.ANTHROPIC_API_KEY) {
             return new Response(
                 "Derek is unavailable because the Anthropic API key is missing or invalid.\n\nSet ANTHROPIC_API_KEY in your .env and restart the dev server.",
-                {
-                    status: 200,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-                }
+                { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
             );
         }
 
-        const { message, history } = await req.json();
+        const { message, history, file } = await req.json() as { message: string; history: { role: string; content: string }[]; file?: FilePayload };
 
-        if (!message) {
-            return NextResponse.json({ error: 'Message is required' }, { status: 400 });
-        }
+        if (!message) return NextResponse.json({ error: 'Message is required' }, { status: 400 });
 
-        // Build conversation history for multi-turn context
         const messages: Anthropic.MessageParam[] = [];
 
         if (Array.isArray(history)) {
             for (const msg of history) {
                 if (msg.content && (msg.role === 'user' || msg.role === 'ai')) {
-                    messages.push({
-                        role: msg.role === 'user' ? 'user' : 'assistant',
-                        content: msg.content,
-                    });
+                    messages.push({ role: msg.role === 'user' ? 'user' : 'assistant', content: msg.content });
                 }
             }
         }
 
-        messages.push({ role: 'user', content: message });
+        messages.push({ role: 'user', content: buildAnthropicContent(message, file) as string });
 
         const stream = await anthropic.messages.stream({
             model: 'claude-sonnet-4-6',
@@ -63,33 +92,22 @@ export async function POST(req: Request) {
             messages,
         });
 
-        // Read the full response and return it as plain text (no streaming)
         const finalMessage = await stream.finalMessage();
-        // content is an array of blocks e.g. [{ type: "text", text: "..." }]
-        const textBlock = (finalMessage.content ?? []).find((b) => b.type === "text") as Anthropic.TextBlock | undefined;
+        const textBlock = (finalMessage.content ?? []).find(b => b.type === "text") as Anthropic.TextBlock | undefined;
         const text = textBlock?.text ?? "";
 
         return new Response(text, {
-            headers: {
-                'Content-Type': 'text/plain; charset=utf-8',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-            },
+            headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
         });
     } catch (error: unknown) {
         console.error("Derek API Error:", error);
-
         const message = error instanceof Error ? error.message : "Unknown error";
         if (message.toLowerCase().includes("invalid x-api-key") || (error as any)?.status === 401) {
             return new Response(
                 "Derek is unavailable because the Anthropic API key is invalid.\n\nSet ANTHROPIC_API_KEY in your .env and restart the dev server.",
-                {
-                    status: 200,
-                    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-                }
+                { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } }
             );
         }
-
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }
