@@ -22,18 +22,10 @@ export const authOptions: NextAuthOptions = {
             sendVerificationRequest: async ({ identifier, url, provider }) => {
                 const { host } = new URL(url);
                 // @ts-ignore
-                const transport = nodemailer.createTransport({
-                    host: "smtp.gmail.com",
-                    port: 465,
-                    secure: true,
-                    auth: {
-                        user: "thakkararyan022@gmail.com",
-                        pass: "cjdeuizbgkwmoufm"
-                    }
-                });
+                const transport = nodemailer.createTransport(provider.server);
                 const result = await transport.sendMail({
                     to: identifier,
-                    from: "thakkararyan022@gmail.com", // Must match authenticated user for Gmail SMTP
+                    from: provider.from,
                     subject: `Sign in to ${host}`,
                     text: `Sign in to ${host}\n${url}\n\n`,
                     html: `
