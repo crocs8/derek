@@ -127,9 +127,22 @@ export default function MegaPromptPage() {
                                 <div className="w-1 h-6 bg-accent/50 rounded-full" />
                                 Expected Output Pattern
                             </h2>
-                            <div className="bg-bg-hover rounded-2xl p-6 md:p-8 text-base text-text-secondary italic whitespace-pre-wrap leading-relaxed border border-border/50">
-                                {prompt.sampleOutput}
-                            </div>
+                            {(!prompt.outputType || prompt.outputType === "text") && (
+                                <div className="bg-bg-hover rounded-2xl p-6 md:p-8 text-base text-text-secondary italic whitespace-pre-wrap leading-relaxed border border-border/50">
+                                    {prompt.sampleOutput}
+                                </div>
+                            )}
+                            {prompt.outputType === "image" && (
+                                <div className="bg-bg-hover rounded-2xl overflow-hidden flex items-center justify-center max-h-[600px] border border-border/50 p-4">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={prompt.sampleOutput} alt="Sample Output" className="max-w-full max-h-[500px] object-contain rounded-xl" />
+                                </div>
+                            )}
+                            {prompt.outputType === "video" && (
+                                <div className="bg-black rounded-2xl overflow-hidden flex items-center justify-center max-h-[600px] border border-border/50">
+                                    <video src={prompt.sampleOutput} controls className="max-w-full max-h-[600px] object-contain rounded-xl" />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
