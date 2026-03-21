@@ -153,6 +153,48 @@ Set `"isMega": true`. Everything else is the same structure as a regular prompt.
 
 ---
 
+## 🖼️ Adding Image or Video Sample Outputs
+
+If you want a Prompt Card to display an image or play a video instead of showing text, you must use a **direct public URL** for the media file.
+
+1. **Host the Media**: Upload your image or video to a free public host like Imgur, Cloudinary, AWS S3, or your own server. You must get a direct link (e.g., ending in `.jpg`, `.png`, or `.mp4`).
+2. **Set `outputType`**: Change the `outputType` field to exactly `"image"` or `"video"`.
+3. **Set `sampleOutput`**: Paste the direct URL of the media into the `sampleOutput` field.
+
+### Image Output Example
+
+```json
+{
+  "title": "Hyper-realistic Portrait",
+  "emoji": "📸",
+  "category": "Image Generation",
+  "description": "Midjourney prompt for a hyper-realistic cinematic portrait.",
+  "promptText": "A hyper-realistic cinematic portrait of a cyberpunk hacker in a neon-lit alleyway, 8k resolution, shot on 35mm lens --ar 16:9",
+  "sampleOutput": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80",
+  "outputType": "image",
+  "isMega": false,
+  "tags": ["midjourney", "portrait", "cyberpunk"]
+}
+```
+
+### Video Output Example
+
+```json
+{
+  "title": "Fluid Motion Animation",
+  "emoji": "🎬",
+  "category": "Video",
+  "description": "Sora AI prompt for fluid water simulation.",
+  "promptText": "A highly detailed, fluid 3D animation of water wrapping around a glowing orb in slow motion, photorealistic.",
+  "sampleOutput": "https://www.w3schools.com/html/mov_bbb.mp4",
+  "outputType": "video",
+  "isMega": false,
+  "tags": ["sora", "animation", "water"]
+}
+```
+
+---
+
 ## 📦 Bulk Import Prompts
 
 1. Prepare a JSON **array** of prompt objects (see examples above).

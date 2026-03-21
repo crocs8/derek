@@ -170,9 +170,22 @@ export default function PromptBankPage() {
                             {selectedPrompt.sampleOutput && (
                                 <div>
                                     <h3 className="text-sm font-semibold text-text-secondary mb-3">Sample Output Expected</h3>
-                                    <div className="bg-bg-hover rounded-xl p-4 text-sm text-text-secondary italic">
-                                        {selectedPrompt.sampleOutput}
-                                    </div>
+                                    {(!selectedPrompt.outputType || selectedPrompt.outputType === "text") && (
+                                        <div className="bg-bg-hover rounded-xl p-4 text-sm text-text-secondary italic">
+                                            {selectedPrompt.sampleOutput}
+                                        </div>
+                                    )}
+                                    {selectedPrompt.outputType === "image" && (
+                                        <div className="bg-bg-hover rounded-xl overflow-hidden flex items-center justify-center max-h-[300px]">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={selectedPrompt.sampleOutput} alt="Sample Output" className="max-w-full max-h-[300px] object-contain rounded-xl" />
+                                        </div>
+                                    )}
+                                    {selectedPrompt.outputType === "video" && (
+                                        <div className="bg-black rounded-xl overflow-hidden flex items-center justify-center max-h-[300px]">
+                                            <video src={selectedPrompt.sampleOutput} controls className="max-w-full max-h-[300px] object-contain rounded-xl" />
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
