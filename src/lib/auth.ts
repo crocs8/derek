@@ -33,7 +33,7 @@ export const authOptions: NextAuthOptions = {
                 });
                 const result = await transport.sendMail({
                     to: identifier,
-                    from: provider.from,
+                    from: "thakkararyan022@gmail.com", // Must match authenticated user for Gmail SMTP
                     subject: `Sign in to ${host}`,
                     text: `Sign in to ${host}\n${url}\n\n`,
                     html: `
