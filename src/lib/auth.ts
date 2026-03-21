@@ -21,14 +21,22 @@ export const authOptions: NextAuthOptions = {
             from: process.env.EMAIL_FROM || "noreply@easemyprompt.ai",
             sendVerificationRequest: async ({ identifier, url, provider }) => {
                 const { host } = new URL(url);
-                // @ts-ignore
-                const transport = nodemailer.createTransport(provider.server);
-                const result = await transport.sendMail({
-                    to: identifier,
-                    from: provider.from,
-                    subject: `Sign in to ${host}`,
-                    text: `Sign in to ${host}\n${url}\n\n`,
-                    html: `
+                try {
+                    // Use standard fetch to completely bypass Render's strict SMTP port blocking
+                    const res = await fetch("https://api.resend.com/emails", {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            // If you haven't verified a domain in Resend, you MUST use 'onboarding@resend.dev'
+                            // AND you can only send emails to the address you signed up to Resend with!
+                            from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+                            to: identifier,
+                            subject: `Sign in to ${host}`,
+                            text: `Sign in to ${host}\n${url}\n\n`,
+                            html: `
 <body style="background: #f9f9f9;">
   <table width="100%" border="0" cellspacing="20" cellpadding="0" style="background: #ffffff; max-width: 600px; margin: auto; border-radius: 10px;">
     <tr>
@@ -53,10 +61,16 @@ export const authOptions: NextAuthOptions = {
   </table>
 </body>
 `
-                });
-                const failed = result.rejected.concat(result.pending).filter(Boolean);
-                if (failed.length) {
-                    throw new Error(`Email(s) (${failed.join(", ")}) could not be sent`);
+                        })
+                    });
+
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        throw new Error(JSON.stringify(errorData));
+                    }
+                } catch (error) {
+                    console.error("Resend API Error:", error);
+                    throw new Error(`Failed to send email: ${error}`);
                 }
             }
         }),
