@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
                         body: JSON.stringify({
                             // If you haven't verified a domain in Resend, you MUST use 'onboarding@resend.dev'
                             // AND you can only send emails to the address you signed up to Resend with!
-                            from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+                            from: "onboarding@resend.dev",
                             to: identifier,
                             subject: `Sign in to ${host}`,
                             text: `Sign in to ${host}\n${url}\n\n`,
