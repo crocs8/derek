@@ -203,6 +203,14 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
         const currentUrl = new URL(window.location.href)
         if (pd) { setDerekInput(pd); currentUrl.searchParams.delete('prefillDerek'); shouldClean = true }
         if (pc) { setClaudeInput(pc); currentUrl.searchParams.delete('prefillClaude'); shouldClean = true }
+        
+        const verified = searchParams.get('verified')
+        if (verified === 'true') {
+            alert("Verification successful!");
+            currentUrl.searchParams.delete('verified');
+            shouldClean = true;
+        }
+
         if (shouldClean) router.replace(currentUrl.pathname + currentUrl.search, { scroll: false })
     }, [chatId, searchParams, router])
 
@@ -335,7 +343,7 @@ export function SplitChat({ guestMode = false }: SplitChatProps) {
                             <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold shrink-0 mt-1">{avatarLetter}</div>
                         )}
                         <div className={cn(
-                            "p-3 text-text-primary text-sm whitespace-pre-wrap font-mono",
+                            "p-3 text-text-primary text-sm whitespace-pre-wrap font-chat",
                             msg.role === "user" ? "bg-bg-hover rounded-[12px_12px_2px_12px]" : "bg-bg-panel rounded-[12px_12px_12px_2px]",
                             isStreaming && idx === messages.length - 1 && msg.role === "ai" && msg.content !== "" ? "streaming-cursor" : ""
                         )}>

@@ -66,8 +66,8 @@ export function PromptCard({
                         </div>
                     )}
                     {outputType === "video" && (
-                        <div className="w-full h-16 bg-bg-base rounded-md overflow-hidden relative flex items-center justify-center">
-                            <Play size={20} className="text-white opacity-80" />
+                        <div className="w-full h-24 bg-black rounded-md overflow-hidden relative flex items-center justify-center">
+                            <video src={sampleOutput} controls className="w-full h-full object-cover" preload="metadata" />
                         </div>
                     )}
                 </div>

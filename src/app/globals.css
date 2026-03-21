@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -26,6 +27,7 @@
   
   --font-body: 'Inter', sans-serif;
   --font-mono: 'Fira Code', monospace;
+  --font-chat: 'DM Sans', sans-serif;
 }
 
 body {
@@ -40,6 +42,10 @@ body {
     text-wrap: balance;
   }
   
+  .font-chat {
+    font-family: var(--font-chat);
+  }
+
   /* Hide scrollbar for Chrome, Safari and Opera */
   .hide-scrollbar::-webkit-scrollbar {
     display: none;

@@ -38,7 +38,7 @@ export default function SignupPage() {
                 return
             }
 
-            const res = await signIn("email", { email, redirect: false })
+            const res = await signIn("email", { email, redirect: false, callbackUrl: "/dashboard?verified=true" })
             if (res?.error) {
                 setMessage("Failed to send magic link. Please try again.")
             } else {

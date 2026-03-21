@@ -8,17 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, Twitter, Linkedin, Instagram } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export const dynamic = 'force-dynamic'
-
-// Mock Data
-const MOCK_PROMPTS = [
-  { id: 1, title: "SaaS Landing Page Copy", emoji: "🚀", category: "Copywriting", description: "Generate high-converting landing page copy based on your product features.", sampleOutput: "Here is your H1...", outputType: "text" as const, isMega: true },
-  { id: 2, title: "React Component Gen", emoji: "⚛️", category: "Coding", description: "Create accessible React components using Tailwind CSS.", sampleOutput: "export function Hero() { ... }", outputType: "text" as const, isMega: false },
-  { id: 3, title: "SEO Blog Outline", emoji: "📝", category: "Writing", description: "Generate a comprehensive outline for an SEO-optimized blog post.", sampleOutput: "H1: The Ultimate Guide...", outputType: "text" as const, isMega: false },
-  { id: 4, title: "Midjourney Portrait", emoji: "📸", category: "Image", outputType: "image" as const, description: "Prompt for hyper-realistic cinematic portraits.", sampleOutput: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80", isMega: true },
-  { id: 5, title: "YouTube Script", emoji: "🎬", category: "Video", description: "A structured 10-minute YouTube script template.", sampleOutput: "[Hook: 0-30s]", outputType: "text" as const, isMega: false }
-]
 
 // ContactForm component
 function ContactForm() {
@@ -86,10 +78,29 @@ function ContactForm() {
 }
 
 export default function LandingPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = React.useState('All')
+  const [viralPrompts, setViralPrompts] = React.useState<any[]>([])
+  const [popularPrompts, setPopularPrompts] = React.useState<any[]>([])
   const tabs = ['All', 'Coding', 'Writing', 'Marketing', 'Image Generation', 'Copywriting']
   
-  const filteredPrompts = MOCK_PROMPTS.filter(prompt => 
+  React.useEffect(() => {
+    fetch('/api/prompts/viral').then(res => res.json()).then(data => {
+      if(Array.isArray(data)) setViralPrompts(data)
+    }).catch(console.error)
+
+    fetch('/api/prompts/popular').then(res => res.json()).then(data => {
+      if(Array.isArray(data)) setPopularPrompts(data)
+    }).catch(console.error)
+  }, [])
+
+  const handlePromptClick = () => {
+    if (confirm("Please login to access the prompt. Go to login?")) {
+      router.push('/login')
+    }
+  }
+
+  const filteredPrompts = popularPrompts.filter(prompt => 
     activeTab === 'All' ? true : prompt.category === activeTab
   )
 
@@ -133,11 +144,13 @@ export default function LandingPage() {
             <div className="pointer-events-none absolute inset-y-0 right-0 w-12 md:w-24 bg-gradient-to-l from-[#0d1117] to-transparent z-10"></div>
             
             <div className="flex gap-4 animate-marquee w-max hover:[animation-play-state:paused] px-4">
-              {[...MOCK_PROMPTS, ...MOCK_PROMPTS, ...MOCK_PROMPTS, ...MOCK_PROMPTS].map((prompt, i) => (
+              {viralPrompts.length > 0 ? [...viralPrompts, ...viralPrompts, ...viralPrompts, ...viralPrompts].map((prompt, i) => (
                 <div key={i} className="shrink-0 w-[280px] md:w-[350px]">
-                  <PromptCard {...prompt} />
+                  <PromptCard {...prompt} onClick={handlePromptClick} />
                 </div>
-              ))}
+              )) : (
+                <div className="text-text-secondary h-20 flex items-center justify-center w-full px-8">Loading viral prompts...</div>
+              )}
             </div>
           </div>
         </section>
@@ -162,11 +175,11 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-h-[400px]">
             {filteredPrompts.length > 0 ? (
               filteredPrompts.map((prompt, i) => (
-                <PromptCard key={i} {...prompt} className="w-full" />
+                <PromptCard key={i} {...prompt} className="w-full" onClick={handlePromptClick} />
               ))
             ) : (
               <div className="col-span-full flex items-center justify-center text-text-secondary h-40">
-                No prompts found for this category.
+                No prompts found for this category or loading.
               </div>
             )}
           </div>
