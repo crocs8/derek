@@ -30,6 +30,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
+        <div style={{ position: 'fixed', bottom: '10px', right: '10px', fontSize: '12px', opacity: 0.6, zIndex: 9999, pointerEvents: 'none' }}>
+          Built by Aryan
+        </div>
       </body>
     </html>
   );
